@@ -638,6 +638,12 @@ pub fn build_connector(node: &Node) -> anyhow::Result<TlsConnector> {
         }
         if chrome {
             apply_chrome_ctx(&mut builder)?;
+            // Chrome parity: the plain connector must offer
+            // exactly Chrome's cipher list. BoringSSL's default
+            // ("ALL") adds ECDHE-ECDSA AES-SHA (c009/c00a),
+            // which uTLS Chrome never sends; the REALITY
+            // connector already pins this list below.
+            builder.set_cipher_list(CHROME_CIPHER_LIST)?;
         }
         if let Some(alpn_wire) = alpn_wire {
             builder.set_alpn_protos(alpn_wire)?;
