@@ -644,6 +644,13 @@ pub fn build_connector(node: &Node) -> anyhow::Result<TlsConnector> {
             // which uTLS Chrome never sends; the REALITY
             // connector already pins this list below.
             builder.set_cipher_list(CHROME_CIPHER_LIST)?;
+            // Chrome parity: OCSP stapling (ext 0005) and
+            // signed certificate timestamps (ext 0012). Both
+            // are missing from the plain connector's
+            // ClientHello while the REALITY connector below
+            // already enables them.
+            builder.enable_ocsp_stapling();
+            builder.enable_signed_cert_timestamps();
         }
         if let Some(alpn_wire) = alpn_wire {
             builder.set_alpn_protos(alpn_wire)?;
