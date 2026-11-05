@@ -605,12 +605,13 @@ pub fn build_connector(node: &Node) -> anyhow::Result<TlsConnector> {
     let websocket = node
         .transport()
         .is_some_and(|transport| transport.transport == "ws");
-    let alps = chrome
-        && if tls.alpn.is_empty() {
-            !websocket
-        } else {
-            tls.alpn.iter().any(|protocol| protocol == "h2")
-        };
+    // Chrome parity: uTLS Chrome sends ALPS unconditionally,
+    // so the plain connector does too. The old gate attached
+    // it only when the ALPN offer contained h2, which dropped
+    // it for http/1.1-only dials (e.g. a WebSocket dial pins
+    // ALPN ["http/1.1"]) even though the peer still keys on
+    // the extension's presence.
+    let alps = chrome;
     let default_alpn = if node
         .transport()
         .is_some_and(|transport| matches!(transport.transport.as_str(), "grpc" | "xhttp"))
