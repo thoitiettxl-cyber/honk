@@ -266,12 +266,13 @@ pub(crate) fn set_chrome_key_shares_ssl_ref(ssl: &boring::ssl::SslRef) -> anyhow
     Ok(())
 }
 
-/// Add h2 ALPS using the historical 0x4469 codepoint. The current uTLS
-/// Chrome_133 profile uses 0x44cd; this compatibility choice is not parity.
+/// Add h2 ALPS using the current 0x44cd codepoint, matching
+/// the uTLS Chrome_133 profile. (Was the historical 0x4469;
+/// the payload is unchanged.)
 pub(crate) fn add_chrome_alps(cfg: &mut ConnectConfiguration) -> anyhow::Result<()> {
     let ssl: &boring::ssl::SslRef = cfg;
     let ok = unsafe {
-        boring_sys::SSL_set_alps_use_new_codepoint(ssl.as_ptr(), 0);
+        boring_sys::SSL_set_alps_use_new_codepoint(ssl.as_ptr(), 1);
         boring_sys::SSL_add_application_settings(
             ssl.as_ptr(),
             b"h2".as_ptr(),
